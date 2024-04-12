@@ -1,0 +1,74 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TinyLLAMA Chat</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>TinyLLAMA Chat</h1>
+  <div class="chat" id="chat"></div>
+  <div class="input-container">
+    <input type="text" id="message" placeholder="Type your message...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    const chatElement = document.getElementById('chat');
+    const messageInput = document.getElementById('message');
+
+    let ws;
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      ws.send(message);
+      messageInput.value = '';
+      appendMessage('You', message, 'sent');
+    }
+
+    function appendMessage(sender, message, className) {
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message', className);
+      messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+      chatElement.appendChild(messageElement);
+      chatElement.scrollTop = chatElement.scrollHeight; // Scroll to bottom
+    }
+
+    function initializeWebSocket() {
+      ws = new WebSocket('ws://localhost:3001');
+
+      ws.onopen = function() {
+        console.log('WebSocket connected');
+      };
+
+      ws.onerror = function(event) {
+        console.error('WebSocket error:', event);
+        alert('An error occurred. Please try again.');
+      };
+
+      ws.onclose = function(event) {
+        console.log('WebSocket disconnected:', event);
+        alert('WebSocket connection closed unexpectedly. Please refresh the page.');
+      };
+
+      ws.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        if (data.success) {
+          appendMessage('TinyLLAMA', data.response, 'received');
+        } else {
+          console.error('Error:', data.error);
+          alert('An error occurred. Please try again.');
+        }
+      };
+    }
+
+    window.onload = function() {
+      initializeWebSocket();
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Prompt Processor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>AI Prompt Processor</h1>
+        <input type="text" id="promptInput" placeholder="Enter your prompt" autofocus>
+        <button id="submitBtn">Submit</button>
+        <div id="statusMessage" class="status-message"></div>
+        <div id="result"></div>
+    </div>
+    <script src="script.js"></script>
+	<script>
+const url = 'http://localhost:11434/api/generate';
+const data = {
+  model: 'tinyllama',
+  prompt: '2+2'
+};
+
+// Show loading indicator
+console.log('Loading...');
+
+fetch(url, {
+  method: 'POST',
+  body: JSON.stringify(data),
+  headers: { 'Content-Type': 'application/json' },
+})
+.then(response => response.text())
+.then(text => {
+  // Split the raw response into individual JSON objects
+  const responses = text.trim().split('\n').map(JSON.parse);
+
+  // Extract the "response" values into an array
+  const responseArray = responses.map(obj => obj.response);
+
+  // Convert the array of responses into a single sentence
+  const sentence = responseArray.join(' ');
+
+  // Log the single sentence
+  console.log('Response Sentence:', sentence);
+})
+.catch(error => console.error('Error:', error));
+</script>
+</body>
+</html>
